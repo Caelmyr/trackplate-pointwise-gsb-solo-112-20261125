@@ -1,0 +1,16 @@
+name: solo115-trackplate
+services:
+  desk:
+    build:
+      context: .
+      args:
+        TRACKPLATE_DEPS_IMAGE: ${TRACKPLATE_DEPS_IMAGE:-python:3.11-slim}
+    image: ${TRACKPLATE_IMAGE:-solo115-trackplate:1.0}
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:${TRACKPLATE_PORT:-19915}:8000"
+    volumes:
+      - measurements:/var/lib/trackplate
+    init: true
+volumes:
+  measurements:

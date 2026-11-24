@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TrackPlate · 足印拓片测量台</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='trackplate.css') }}">
+  <script defer src="{{ url_for('static', filename='trackplate.js') }}"></script>
+</head>
+<body>
+<header class="masthead">
+  <a class="brand" href="/"><i aria-hidden="true"></i> TrackPlate</a>
+  <span class="mast-label">足印拓片测量台</span>
+  <a class="external" href="/prepare">照片准备 ↗</a>
+</header>
+<main>
+  <section class="introduction">
+    <div><h1>足印拓片横截测量</h1><p>从正拍拓片选定前向与截面，用真实印痕量出横截宽度。</p></div>
+    <div class="top-actions">
+      <button id="practice" class="primary" type="button">打开练习足印</button>
+      <button id="open-import" type="button">导入原片</button>
+    </div>
+  </section>
+  <p id="notice" class="notice" role="status" hidden></p>
+  <section class="library">
+    <label for="library">拓片卡</label>
+    <select id="library"><option value="">选取已存卡片</option></select>
+    <span id="origin"></span>
+  </section>
+  <section id="empty" class="empty">
+    <div class="empty-track" aria-hidden="true"><i></i></div>
+    <h2>选择一张拓片原照</h2>
+    <p>使用正拍照片，将参考原点标在掌垫一带，并按实物标尺填入换算。</p>
+  </section>
+  <section id="workspace" class="workspace" hidden>
+    <div class="left">
+      <section class="panel source">
+        <div class="panel-head">
+          <div><h2 id="card-title">原片</h2><span id="dimensions"></span></div>
+          <div class="modes" role="group" aria-label="原片截面模式">
+            <button id="probe-mode" data-mode="probe" aria-pressed="true" type="button">点读</button>
+            <button id="mark-mode" data-mode="mark" aria-pressed="false" type="button">取截面</button>
+          </div>
+        </div>
+        <div class="camera"><canvas id="capture" aria-label="拓片原照，可点击取样或输入原片像素坐标"></canvas></div>
+        <div class="probe">
+          <b>原片点读</b>
+          <form id="probe-form"><label>X <input id="probe-x" type="number" min="0" step="1" required></label>
+            <label>Y <input id="probe-y" type="number" min="0" step="1" required></label>
+            <button type="submit">读取</button></form>
+          <span id="probe-result">选择原片像素</span>
+        </div>
+      </section>
+      <section class="panel profile">
+        <div class="panel-head">
+          <div><h2>截面实测亮度</h2><span>横向距离 · px</span></div>
+          <span class="legend"><i></i> 印痕亮度上限</span>
+        </div>
+        <canvas id="chart" width="850" height="166" aria-label="截面的实际印痕亮度"></canvas>
+      </section>
+    </div>
+    <aside class="right">
+      <section class="panel readout">
+        <div class="panel-head"><h2>当前印痕宽</h2><span id="measurement-state"></span></div>
+        <div class="volume"><strong id="span-width">—</strong><span id="span-unit"></span></div>
+        <p id="selected-level"></p>
+      </section>
+      <form id="calibration" class="panel settings">
+        <div class="panel-head"><div><h2>印迹标定</h2><span>向右为 0°，前向角在画面中顺时针增加</span></div></div>
+        <label class="wide">卡片名称<input id="name" maxlength="80" required></label>
+        <fieldset><legend>原片坐标 · px</legend><div class="form-grid">
+          <label>参考原点 X<input data-setting="cx" type="number" step="any" min="0" required></label>
+          <label>参考原点 Y<input data-setting="cy" type="number" step="any" min="0" required></label>
+          <label>前后截位<input data-setting="station" type="number" step="1" required></label>
+          <label>取样半宽<input data-setting="half_span" type="number" step="1" min="3" required></label>
+        </div></fieldset>
+        <fieldset><legend>前向与标尺</legend><div class="form-grid">
+          <label>前向角 °<input data-setting="angle" type="number" step="any" min="0" max="360" required></label>
+          <label>尺度 mm/px<input data-setting="mm_per_px" type="number" step="any" min="0.001" required></label>
+          <label>印痕亮度上限<input data-setting="cutoff" type="number" step="1" min="1" max="254" required></label>
+        </div></fieldset>
+        <button id="save" class="primary" type="submit">保存并测量</button>
+      </form>
+      <section class="panel outputs">
+        <div class="panel-head"><h2>拓片交接</h2></div>
+        <div><a id="proof" download>PNG 校样 ↓</a><a id="csv" download>CSV 读数 ↓</a><a id="zip" download>ZIP 拓片卡 ↓</a></div>
+        <button id="prepare" type="button">将原片送入照片准备 ↗</button>
+      </section>
+    </aside>
+  </section>
+</main>
+<dialog id="import">
+  <form id="upload">
+    <h2>导入拓片原照</h2>
+    <label>拓片卡名称<input name="name" maxlength="80" required></label>
+    <label>照片<input name="photo" type="file" accept="image/png,image/jpeg,image/webp,image/bmp,image/tiff" required></label>
+    <p id="import-notice" role="status"></p>
+    <div class="top-actions"><button id="cancel-import" type="button">取消</button><button class="primary" type="submit">建立拓片卡</button></div>
+  </form>
+</dialog>
+</body>
+</html>
