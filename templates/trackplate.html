@@ -64,6 +64,7 @@
         <div class="panel-head"><h2>当前印痕宽</h2><span id="measurement-state"></span></div>
         <div class="volume"><strong id="span-width">—</strong><span id="span-unit"></span></div>
         <p id="selected-level"></p>
+        <p id="segment-list"></p>
       </section>
       <form id="calibration" class="panel settings">
         <div class="panel-head"><div><h2>印迹标定</h2><span>向右为 0°，前向角在画面中顺时针增加</span></div></div>
@@ -78,9 +79,18 @@
           <label>前向角 °<input data-setting="angle" type="number" step="any" min="0" max="360" required></label>
           <label>尺度 mm/px<input data-setting="mm_per_px" type="number" step="any" min="0.001" required></label>
           <label>印痕亮度上限<input data-setting="cutoff" type="number" step="1" min="1" max="254" required></label>
+          <label>读数方式<select data-setting="reading_mode">
+            <option value="pad">掌垫分段合计</option>
+            <option value="continuous">普通连续印痕</option>
+          </select></label>
         </div></fieldset>
         <button id="save" class="primary" type="submit">保存并测量</button>
       </form>
+      <section class="panel readout">
+        <div class="panel-head"><h2>实见接触面积</h2><span>掌垫暗印痕 · 留空浅缝与白孔</span></div>
+        <div class="volume"><strong id="pad-area">—</strong><span id="pad-unit"></span></div>
+        <p id="area-detail"></p>
+      </section>
       <section class="panel outputs">
         <div class="panel-head"><h2>拓片交接</h2></div>
         <div><a id="proof" download>PNG 校样 ↓</a><a id="csv" download>CSV 读数 ↓</a><a id="zip" download>ZIP 拓片卡 ↓</a></div>

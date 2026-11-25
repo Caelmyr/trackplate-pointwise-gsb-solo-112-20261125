@@ -77,7 +77,10 @@ function paintSource() {
   ctx.stroke();
   ctx.fillStyle = "#236960";
   if (result.reading) {
-    for (const pt of result.reading.ends) {
+    const ends = result.reading.segments
+      ? result.reading.segments.flatMap((segment) => segment.ends)
+      : result.reading.ends;
+    for (const pt of ends) {
       ctx.beginPath();
       ctx.arc(pt.x, pt.y, 4, 0, 2 * Math.PI);
       ctx.fill();
@@ -101,9 +104,12 @@ function paintChart() {
   ctx.fillStyle = "#fdfaf6";
   ctx.fillRect(0, 0, width, height);
   if (result.reading) {
-    const [left, right] = result.reading.ends.map((point) => xAt(point.offset));
+    const runs = result.reading.segments || [result.reading];
     ctx.fillStyle = "#e5ece3";
-    ctx.fillRect(left, 15, Math.max(2, right - left), height - 40);
+    for (const run of runs) {
+      const [left, right] = run.ends.map((point) => xAt(point.offset));
+      ctx.fillRect(left, 15, Math.max(2, right - left), height - 40);
+    }
   }
   ctx.font = "12px monospace";
   ctx.fillStyle = "#695749";
@@ -157,12 +163,39 @@ function show() {
   get("probe-y").value = state.probe?.y ?? Math.round(result.center.y);
   get("probe-result").textContent = state.probe ? pointLabel(state.probe) : "选择原片像素";
   const reading = result.reading;
+  const area = result.area;
   get("span-width").textContent = reading ? reading.width_mm.toFixed(2) : "—";
-  get("span-unit").textContent = reading ? "mm" : "未见连续印痕";
+  get("span-unit").textContent = reading
+    ? (reading.mode === "pad" ? "mm · " + reading.segments.length + " 段" : "mm")
+    : "未见连续印痕";
   get("measurement-state").textContent = "截位 " + result.station + " px";
-  get("selected-level").textContent = reading
-    ? "同一连续印痕 " + reading.pixels + " px · 原片截面"
-    : "当前截面没有满足亮度门槛的连续印痕";
+  if (reading && reading.mode === "pad") {
+    get("selected-level").textContent = reading.segments.length
+      ? "掌垫各段实际宽度合计 · " + reading.pixels + " px"
+      : "当前截面没有落在掌垫上的暗印痕";
+    get("segment-list").textContent = reading.segments.length
+      ? reading.segments.map((segment) =>
+          "#" + (segment.index + 1) + " " + segment.pixels + " px（" + segment.width_mm.toFixed(2) +
+          " mm）· 偏移 " + segment.start + "…" + segment.end).join("　")
+      : "空段不计入宽度";
+  } else {
+    get("selected-level").textContent = reading
+      ? "同一连续印痕 " + reading.pixels + " px · 原片截面"
+      : "当前截面没有满足亮度门槛的连续印痕";
+    get("segment-list").textContent = "手填普通连续印痕读数";
+  }
+  get("pad-area").textContent = area ? area.mm2.toFixed(2) : "—";
+  get("pad-unit").textContent = area && !area.origin_marked
+    ? "mm² · 参考原点不在暗印痕上"
+    : "mm² · " + (area ? area.pixels : 0) + " px";
+  if (area) {
+    const attached = area.blocks.filter((block) => block.attached).length;
+    const loose = area.blocks.filter((block) => !block.attached).length;
+    get("area-detail").textContent = area.origin_marked
+      ? "只算归入的暗印痕 " + area.pixels + " px；原点块 " + area.base_pixels + " px，接上 " +
+        attached + " 块，留下 " + loose + " 块。"
+      : "参考原点不在暗印痕上，面积留空。";
+  }
   for (const [id, filename] of Object.entries({proof: "proof.png", csv: "profile.csv", zip: "observation.zip"})) {
     get(id).href = "/trackplate" + route("/export/" + filename) + savedQuery();
   }
@@ -237,7 +270,8 @@ get("probe-form").addEventListener("submit", (event) => {
 get("calibration").addEventListener("submit", (event) => {
   event.preventDefault();
   action(async () => {
-    const fields = Object.fromEntries(settings.map((field) => [field.dataset.setting, Number(field.value)]));
+    const fields = Object.fromEntries(settings.map((field) => [
+      field.dataset.setting, field.tagName === "SELECT" ? field.value : Number(field.value)]));
     const card = await api(route(""), {
       method: "PATCH", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({revision: state.card.revision, name: get("name").value, settings: fields}),
