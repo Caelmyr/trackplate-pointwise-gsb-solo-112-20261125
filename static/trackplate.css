@@ -66,6 +66,10 @@ h2 { font-size: 15px; font-weight: 700; }
 .settings fieldset { padding: 8px 0 0; border: 0; border-top: 1px solid var(--line); }
 .form-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
 .settings > button { width: calc(100% - 30px); }
+.axis-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 15px 10px; }
+.axis-actions button { flex: 1 1 130px; min-width: 0; }
+.axis-note { margin: 0 15px 12px; padding: 9px 11px; border-radius: 5px; font-size: 12px; line-height: 1.55; color: #36554d; background: #e6efea; border: 1px solid #b9cfc6; }
+.axis-note.warn { color: #8a4a2f; background: #f6e7dd; border-color: #d8b39d; }
 .outputs > div:nth-child(2) { display: flex; flex-wrap: wrap; gap: 8px 13px; font-size: 12px; color: var(--accent); }
 .outputs > button { font-size: 12px; }
 .empty { min-height: 415px; display: grid; justify-items: center; align-content: center; padding: 30px; text-align: center; border: 1px solid var(--line); border-radius: 5px; background: #faf5ed; }

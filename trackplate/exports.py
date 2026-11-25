@@ -37,7 +37,9 @@ def proof(image, card, result):
         detail = f'Dark span {result_read["pixels"]} px  /  {result_read["width_mm"]:.2f} mm'
     else:
         detail = "No marked span in the visible transect"
-    draw.text((14,height+14), f'Transverse station {result["station"]} px  Axis {result["angle"]:.1f} deg', fill="#f6ead8")
+    draw.text((14,height+14),
+              f'Transverse station {result["station"]} px / lateral {result["lateral"]} px  '
+              f'Axis {result["angle"]:.1f} deg', fill="#f6ead8")
     draw.text((14,height+35), detail, fill="#e0b482")
     return png(output)
 
@@ -47,7 +49,10 @@ def package(card, original, image, result):
     with ZipFile(buffer, "w", ZIP_DEFLATED) as output:
         output.writestr("print.png", original)
         output.writestr("reading.json", json.dumps({"card": card, "reading": result["reading"],
-                                                    "center": result["center"]}, ensure_ascii=False, indent=2))
+                                                    "center": result["center"],
+                                                    "station": result["station"],
+                                                    "lateral": result["lateral"]},
+                                                   ensure_ascii=False, indent=2))
         output.writestr("transect-profile.csv", trace_table(result))
         output.writestr("track-proof.png", proof(image, card, result))
     return buffer.getvalue()

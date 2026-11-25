@@ -75,6 +75,12 @@ def create_app(directory=None):
         y = integer(request.args.get("y"), "Y", 0, card["height"] - 1)
         return jsonify(transect.point(transect.pixels(cards.photo(key)), x, y, card["settings"]))
 
+    @api.get("/cards/<key>/axis-suggestion")
+    def axis_suggestion(key):
+        card = cards.read(key, request.args.get("revision"))
+        suggestion = transect.suggest_axis(transect.pixels(cards.photo(key)), card["settings"])
+        return jsonify(suggestion)
+
     @api.get("/cards/<key>/export/profile.csv")
     def profile(key):
         _, _, result = measurement(key)

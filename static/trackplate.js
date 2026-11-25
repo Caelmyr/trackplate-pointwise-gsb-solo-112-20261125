@@ -1,8 +1,26 @@
 "use strict";
 
 const get = (id) => document.getElementById(id);
-const state = {card: null, result: null, photo: null, probe: null, mode: "probe", busy: false};
+const state = {card: null, result: null, photo: null, probe: null, suggestion: null, mode: "probe", busy: false};
 const settings = [...document.querySelectorAll("[data-setting]")];
+
+function field(name) {
+  return settings.find((node) => node.dataset.setting === name);
+}
+
+function resetSuggestion() {
+  state.suggestion = null;
+  get("adopt-axis").hidden = true;
+  get("axis-note").hidden = true;
+  get("axis-note").textContent = "";
+}
+
+function axisNote(message, warn = false) {
+  const node = get("axis-note");
+  node.textContent = message;
+  node.hidden = !message;
+  node.classList.toggle("warn", warn);
+}
 
 async function api(path, options) {
   const response = await fetch("/trackplate" + path, options);
@@ -159,10 +177,11 @@ function show() {
   const reading = result.reading;
   get("span-width").textContent = reading ? reading.width_mm.toFixed(2) : "—";
   get("span-unit").textContent = reading ? "mm" : "未见连续印痕";
-  get("measurement-state").textContent = "截位 " + result.station + " px";
+  get("measurement-state").textContent = "截位 " + result.station + " / 侧向 " + result.lateral + " px";
   get("selected-level").textContent = reading
     ? "同一连续印痕 " + reading.pixels + " px · 原片截面"
     : "当前截面没有满足亮度门槛的连续印痕";
+  resetSuggestion();
   for (const [id, filename] of Object.entries({proof: "proof.png", csv: "profile.csv", zip: "observation.zip"})) {
     get(id).href = "/trackplate" + route("/export/" + filename) + savedQuery();
   }
@@ -225,8 +244,10 @@ get("capture").addEventListener("click", (event) => {
   action(async () => {
     await probe(x, y);
     if (state.mode === "mark") {
-      settings.find((field) => field.dataset.setting === "station").value = Math.round(state.probe.longitudinal);
-      notice("已填入原片前后截位，保存后更新宽度和校样。");
+      field("station").value = Math.round(state.probe.longitudinal);
+      field("lateral").value = Math.round(state.probe.transverse);
+      resetSuggestion();
+      notice("已按当前轴向填入原片前后/侧向截位，保存后更新宽度和校样。");
     }
   });
 });
@@ -237,7 +258,7 @@ get("probe-form").addEventListener("submit", (event) => {
 get("calibration").addEventListener("submit", (event) => {
   event.preventDefault();
   action(async () => {
-    const fields = Object.fromEntries(settings.map((field) => [field.dataset.setting, Number(field.value)]));
+    const fields = Object.fromEntries(settings.map((node) => [node.dataset.setting, Number(node.value)]));
     const card = await api(route(""), {
       method: "PATCH", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({revision: state.card.revision, name: get("name").value, settings: fields}),
@@ -245,6 +266,40 @@ get("calibration").addEventListener("submit", (event) => {
     await open(card);
     await library();
   });
+});
+settings.forEach((node) => node.addEventListener("input", resetSuggestion));
+get("suggest-axis").addEventListener("click", () => action(async () => {
+  const suggestion = await api(route("/axis-suggestion") + savedQuery());
+  state.suggestion = suggestion;
+  if (suggestion.status !== "ok") {
+    get("adopt-axis").hidden = true;
+    axisNote("建议复核：" + suggestion.reasons.join(" "), true);
+    return;
+  }
+  get("adopt-axis").hidden = false;
+  const scratch = suggestion.scratches_excluded.length
+    ? "；已剔除细长划痕 " + suggestion.scratches_excluded.length + " 处" : "";
+  axisNote("建议向趾轴 " + suggestion.angle.toFixed(2) + "°（相对粗前向 " +
+    (suggestion.delta_deg >= 0 ? "+" : "") + suggestion.delta_deg.toFixed(2) +
+    "°），左趾 " + suggestion.left_toes + " 枚、右趾 " + suggestion.right_toes +
+    " 枚，趾痕中线偏差 " + suggestion.toe_bias_px.toFixed(1) + " px" + scratch + "。");
+}));
+get("adopt-axis").addEventListener("click", () => {
+  const suggestion = state.suggestion;
+  if (!suggestion || suggestion.status !== "ok") return;
+  const cfg = Object.fromEntries(settings.map((node) => [node.dataset.setting, Number(node.value)]));
+  const rad = cfg.angle * Math.PI / 180;
+  const forward = [Math.cos(rad), Math.sin(rad)];
+  const cross = [-forward[1], forward[0]];
+  const centerX = cfg.cx + forward[0] * cfg.station + cross[0] * cfg.lateral;
+  const centerY = cfg.cy + forward[1] * cfg.station + cross[1] * cfg.lateral;
+  // Station/lateral are computed by the backend's adopt_axis so the geometry has one source.
+  field("angle").value = suggestion.adoption.angle.toFixed(2);
+  field("station").value = suggestion.adoption.station;
+  field("lateral").value = suggestion.adoption.lateral;
+  get("adopt-axis").hidden = true;
+  axisNote("已采用建议轴；横截中心保持原片像素 (" + Math.round(centerX) + ", " + Math.round(centerY) +
+    ")，仅截线转为与该轴垂直。保存后按现有标尺重测。");
 });
 get("prepare").addEventListener("click", () => action(async () => {
   const {url} = await api(route("/prepare") + savedQuery(), {method: "POST"});

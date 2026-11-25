@@ -72,6 +72,7 @@
           <label>参考原点 X<input data-setting="cx" type="number" step="any" min="0" required></label>
           <label>参考原点 Y<input data-setting="cy" type="number" step="any" min="0" required></label>
           <label>前后截位<input data-setting="station" type="number" step="1" required></label>
+          <label>侧向截位<input data-setting="lateral" type="number" step="1" required></label>
           <label>取样半宽<input data-setting="half_span" type="number" step="1" min="3" required></label>
         </div></fieldset>
         <fieldset><legend>前向与标尺</legend><div class="form-grid">
@@ -79,6 +80,11 @@
           <label>尺度 mm/px<input data-setting="mm_per_px" type="number" step="any" min="0.001" required></label>
           <label>印痕亮度上限<input data-setting="cutoff" type="number" step="1" min="1" max="254" required></label>
         </div></fieldset>
+        <div class="axis-actions">
+          <button id="suggest-axis" type="button">按趾痕建议向趾轴</button>
+          <button id="adopt-axis" class="primary" type="button" hidden>采用该轴并保留截线中心</button>
+        </div>
+        <p id="axis-note" class="axis-note" role="status" hidden></p>
         <button id="save" class="primary" type="submit">保存并测量</button>
       </form>
       <section class="panel outputs">
