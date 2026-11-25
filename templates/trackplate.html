@@ -88,6 +88,80 @@
       </section>
     </aside>
   </section>
+
+  <section id="compare-dock" class="panel compare-dock" hidden>
+    <div class="panel-head compare-head">
+      <div>
+        <h2>新旧对照 · 原点毫米共框</h2>
+        <span>从现在这张卡挑一张旧照拓片卡，按两卡自有的原点、前向与标尺对到同一毫米位置；原片与标定均不改动。</span>
+      </div>
+      <div class="compare-picker">
+        <label for="compare-other">旧照拓片卡
+          <select id="compare-other" aria-label="选择要对比的旧照拓片卡"><option value="">挑选旧照…</option></select>
+        </label>
+        <button id="compare-run" class="primary" type="button" title="用两张卡的原点、前向与标尺对齐到同一毫米位置">开始对比<span class="btn-sub">（新旧对照）</span></button>
+      </div>
+    </div>
+
+    <div id="compare-panel" class="compare-body" hidden>
+      <p id="compare-frame-info" class="compare-frame-info"></p>
+      <div id="compare-summary" class="compare-summary" role="group" aria-label="按变化类别筛选"></div>
+
+      <div class="compare-layout">
+        <div class="compare-map-col">
+          <h3>共同毫米格网（前向上、右向为右）</h3>
+          <div class="compare-map-wrap">
+            <canvas id="compare-map" width="237" height="237"
+                    aria-label="共同毫米格网的变化分类，点按格点查看两张原片的实际源坐标"></canvas>
+          </div>
+          <p class="compare-tip">点格点或右侧清单，用两张原片各自的点读核对实际源坐标。灰格为一侧缺拍，不判变化。</p>
+        </div>
+
+        <div class="compare-detail-col">
+          <div id="compare-readout" class="compare-readout" aria-live="polite">
+            <b>双片源坐标点读</b>
+            <p>点选格点后，这里给出对到的两张实际源坐标与变化类别；共同网格的毫米坐标不会冒充原片坐标。</p>
+            <div id="compare-readout-fields" hidden>
+              <p id="compare-mm" class="compare-mm"></p>
+              <p>变化类别：<strong id="compare-category" data-category=""></strong></p>
+              <p>现在这张实际源坐标：<strong id="compare-current-xy"></strong>
+                <span id="compare-current-level" class="compare-level"></span></p>
+              <p>旧照实际源坐标：<strong id="compare-old-xy"></strong>
+                <span id="compare-old-level" class="compare-level"></span></p>
+              <p class="compare-probe-line" id="compare-probe-current"></p>
+              <p class="compare-probe-line" id="compare-probe-old"></p>
+            </div>
+          </div>
+
+          <div class="compare-source-row">
+            <figure><figcaption>现在这张 · 原片源位置</figcaption>
+              <div class="compare-canvas-box"><canvas id="compare-current-canvas"></canvas></div>
+            </figure>
+            <figure><figcaption>旧照 · 原片源位置</figcaption>
+              <div class="compare-canvas-box"><canvas id="compare-old-canvas"></canvas></div>
+            </figure>
+          </div>
+
+          <div class="compare-table-panel">
+            <div id="compare-filters" class="compare-filters" role="tablist" aria-label="变化类别清单筛选"></div>
+            <div class="compare-table-wrap">
+              <table id="compare-table">
+                <thead><tr><th>毫米位置 (前后, 左右)</th><th>现在原片 (x, y)</th><th>旧照原片 (x, y)</th><th>类别</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="compare-outputs">
+            <a id="compare-proof-link" class="button-like" target="_blank" rel="noopener">打开 PNG 校样 ↗</a>
+            <a id="compare-proof-download" download="trackplate-compare-proof.png">下载 PNG 校样 ↓</a>
+            <a id="compare-csv-link" download="trackplate-compare.csv">对照坐标 CSV ↓</a>
+          </div>
+          <img id="compare-proof-image" class="compare-proof-image" alt="新旧对照 PNG 校样：共同拍到的区域与变化分类" hidden>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 <dialog id="import">
   <form id="upload">

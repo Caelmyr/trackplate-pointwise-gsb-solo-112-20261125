@@ -154,3 +154,50 @@ def practice():
     draw.line((47,435,147,435), fill="#584f3c", width=2)
     draw.text((151,424), "80 mm", fill="#584f3c", font=ImageFont.load_default(size=12))
     return photo.size, png(photo), cfg
+
+
+# --- Lazy bridges to the two-card comparison feature (avoid import cycle) ---
+
+def compare_cards(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def compare(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def aligned_source_xy(*args, **kwargs):
+    from .compare import source_xy
+    return source_xy(*args, **kwargs)
+
+
+def physical_half_width(*args, **kwargs):
+    from .compare import physical_half_width as _half
+    return _half(*args, **kwargs)
+
+
+def comparison_report(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def build_comparison(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def grid_comparison(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def align_cards(*args, **kwargs):
+    from .compare import compare_cards as _compare_cards
+    return _compare_cards(*args, **kwargs)
+
+
+def shared_frame(*args, **kwargs):
+    from .compare import grid_geometry
+    return grid_geometry(*args, **kwargs)
